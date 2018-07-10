@@ -1,0 +1,54 @@
+<?php
+
+function locale_force_redirect_init() {
+  $destination_url = locale_force_redirect_destination_url(locale_language_from_interface());
+
+  if ($destination_url) {
+    $options = ['external' => TRUE];
+
+    if (user_access('administer locale force redirect')) {
+      drupal_set_message(t('This page would be redirected to !link for non-administrators.', ['!link' => l($destination_url, $destination_url, $options)]));
+    }
+    else {
+      drupal_goto($destination_url, ['external' => TRUE], 301);
+    }
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function locale_force_redirect_menu() {
+  $items = array();
+  $items['admin/config/regional/locale_force_redirect'] = array(
+    'title' => t('Locale Force Redirect'),
+    'description' => t('Force all pages for a locale to redirect'),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer locale force redirect'),
+    'page arguments' => array('locale_force_redirect_settings'),
+    'file' => 'locale_force_redirect.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function locale_force_redirect_permission() {
+  return array(
+    'administer locale force redirect' => array(
+      'title' => t('Administer Locale Force Redirect'),
+    ),
+  );
+}
+
+/**
+ * Get the destination URL for a locale key
+ */
+function locale_force_redirect_destination_url($key) {
+  $settings = variable_get('locale_force_redirect', []);
+  return array_key_exists($key, $settings) && array_key_exists('destination_url', $settings[$key]) && !empty($settings[$key]['destination_url']) ?
+            $settings[$key]['destination_url'] : FALSE;
+}

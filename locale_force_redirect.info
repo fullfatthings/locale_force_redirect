@@ -1,0 +1,3 @@
+name = Locale Force Redirect
+description = Forces all requests for a locale to a specific URL.
+core = 7.x
